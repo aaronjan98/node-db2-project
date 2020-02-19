@@ -17,7 +17,6 @@ router.get('/', (req,res) => {
       });
 })
 
-
 router.post('/', (req, res) => {
     db('cars')
       .insert(req.body, 'VIN')
@@ -29,6 +28,25 @@ router.post('/', (req, res) => {
       .catch(error => {
         console.log(error);
         res.status(500).json({ error: "failed to add the car information" });
+      });
+});
+
+router.put("/", (req, res) => {
+    const VIN = req.body.VIN;
+    const changes = req.body;
+
+    console.log('VIN', VIN, 'changes', changes);
+
+    db('cars')
+      .where({ VIN }) // remember to filter or all records will be updated (BAD PANDA!!)
+      .update(changes) // could be partial changes, only one column is enough
+      .then(count => {
+        res.status(200).json(count);
+      })
+      .catch(error => {
+        console.log(error);
+  
+        res.status(500).json({ error: "failed to update the car information." });
       });
 });
 
