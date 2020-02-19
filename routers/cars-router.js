@@ -35,8 +35,6 @@ router.put("/", (req, res) => {
     const VIN = req.body.VIN;
     const changes = req.body;
 
-    console.log('VIN', VIN, 'changes', changes);
-
     db('cars')
       .where({ VIN }) // remember to filter or all records will be updated (BAD PANDA!!)
       .update(changes) // could be partial changes, only one column is enough
@@ -50,21 +48,38 @@ router.put("/", (req, res) => {
       });
 });
 
+router.delete('/', (req, res) => {
+    const VIN = req.body.VIN;
+    console.log('VIN', VIN);
+
+    db('cars')
+      .where({ VIN })
+      .del()
+      .then(count => {
+        res.status(200).json(count);
+      })
+      .catch(error => {
+        console.log(error);
+  
+        res.status(500).json({ error: "failed to remove the car" });
+      });
+});
+
 // custom middleware
 
 function validateVIN(req, res, next) {
-    const { id } = req.params;
+    const { VIN } = req.body.VIN;
 
-    getById(id)
+    getById(VIN)
     .then(car => {
       console.log('car', car);
       if( !Object.keys(car).length ){
-        res.status(400).json({ message: "invalid car id" });
+        res.status(400).json({ message: "invalid car VIN" });
       }else next();
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json({ error: `Couldn't retrieve a car with id: ${id}` });
+      res.status(500).json({ error: `Couldn't retrieve a car with VIN: ${VIN}` });
     });
 }
 
